@@ -10,7 +10,7 @@ runoff_stations[, id := factor(id)]
 runoff_stations[, altitude := round(altitude, 0)]
 
 runoff_stations_new <- runoff_stations[,.(sname, area, altitude)]
-runoff_stations_new$size <- runoff_stations_new[,.(area/altitude)]
+runoff_stations_new$size <- runoff_stations_new[,(2*(area/altitude))]
 
 ggplot(data = runoff_stations_new, aes(x = area, y = altitude, color = size)) +
   geom_point() +
