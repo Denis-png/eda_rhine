@@ -1,3 +1,5 @@
+#Task 1-2
+
 library(data.table)
 library(ggplot2)
 
@@ -23,4 +25,7 @@ runoff_stations_very_new$altitude <- runoff_stations_new[,altitude]
 ggplot(data = runoff_stations_very_new, aes(x = lon, y = lat, color = altitude)) +
   geom_point()+
   geom_text(aes(label=sname),hjust=0, vjust=0) +
-  scale_color_gradient(low="green", high="red")
+  scale_color_gradient(low="darkgreen", high="darkred")
+
+#Task 3-4
+
