@@ -1,4 +1,4 @@
-#Task 1-2
+#Task 1-3
 
 library(data.table)
 library(ggplot2)
@@ -27,5 +27,10 @@ ggplot(data = runoff_stations_very_new, aes(x = lon, y = lat, color = altitude))
   geom_text(aes(label=sname),hjust=0, vjust=0) +
   scale_color_gradient(low="darkgreen", high="darkred")
 
-#Task 3-4
+#Task 4-5
+
+runoff_day <- readRDS('./data/runoff_day_raw.rds')
+
+ggplot(data = runoff_day, aes(x = sname, y = date, color=sname)) +
+  geom_boxplot()
 
