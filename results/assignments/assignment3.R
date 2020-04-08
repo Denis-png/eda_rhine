@@ -31,6 +31,7 @@ runoff_stats_new
 
 #Question 3
 
+#Can't solve this one. Didn't found the way how to assign runoff_class to runoff_month table to a new column.
 runoff_summary <- readRDS('./data/runoff_summary.rds')
 runoff_month <- readRDS('./data/runoff_month.rds')
 
