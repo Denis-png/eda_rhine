@@ -31,6 +31,9 @@ ggplot(data = runoff_stations_very_new, aes(x = lon, y = lat, color = altitude))
 
 runoff_day <- readRDS('./data/runoff_day_raw.rds')
 
-ggplot(data = runoff_day, aes(x = sname, y = date, color=sname)) +
-  geom_boxplot()
+missing_values <- runoff_day[value < 0, .(missing = .N), by = .(sname,date)]
+
+ggplot(data = runoff_day, aes(x = sname, y = date, color = sname)) +
+  geom_boxplot() +
+  geom_point(data = missing_values, aes(x = sname , y = date, color = 'red'))
 
