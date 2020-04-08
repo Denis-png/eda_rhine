@@ -65,5 +65,21 @@ runoff_stations$mean_day <- runoff_stats$mean_day
 ggplot(runoff_stations, aes(x = mean_day, y = area, col = area_class, cex = alt_class)) +
   geom_point()
 
+#Explorer question 4
 
+#Haven't finished this. Have some issues with plotting.
+runoff_winter <- readRDS('./data/runoff_winter.rds')
+runoff_summer <- readRDS('./data/runoff_summer.rds')
+runoff_month <- readRDS('./data/runoff_month.rds')
+runoff_year <- readRDS('./data/runoff_year.rds')
+
+names <- c('sname', 'winter', 'summer', 'month', 'year')
+
+runoff_max <- data.table(winter = runoff_winter[,max(value),by = sname], summer = runoff_summer[,max(value),by = sname], month = runoff_month[,max(value),by = sname], year = runoff_year[,max(value),by = sname])
+runoff_max[,c(3,5,7)] <- NULL
+colnames(runoff_max) <- names
+
+runoff_min <- data.table(value = runoff_winter[,min(value),by = sname], value = runoff_summer[,min(value),by = sname], value = runoff_month[,min(value),by = sname], value = runoff_year[,min(value),by = sname])
+runoff_min[,c(3,5,7)] <- NULL
+colnames(runoff_min) <- names
 
