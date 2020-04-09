@@ -31,15 +31,14 @@ runoff_stats_new
 
 #Question 3
 
-#Can't solve this one. Didn't found the way how to assign runoff_class to runoff_month table to a new column.
 runoff_summary <- readRDS('./data/runoff_summary.rds')
 runoff_month <- readRDS('./data/runoff_month.rds')
-
-runoff_month$runoff_class[sname == runoff_summary$sname] <- runoff_summary$runoff_class
-
-ggplot(runoff_month, aes(x = factor(month), y = value, fill= runoff_class)) +
+to_merge <- runoff_summary[,.(sname,runoff_class)]
+runoff_month_new <- merge(runoff_month, to_merge, by = 'sname')
+ggplot(runoff_month_new, aes(x = factor(month), y = value, fill = runoff_class)) +
   facet_wrap(~sname, scales = 'free') +
-  geom_boxplot()
+  geom_boxplot() 
+  
 
 #Question 4
 
@@ -67,19 +66,82 @@ ggplot(runoff_stations, aes(x = mean_day, y = area, col = area_class, cex = alt_
 
 #Explorer question 4
 
-#Haven't finished this. Have some issues with plotting.
+
 runoff_winter <- readRDS('./data/runoff_winter.rds')
 runoff_summer <- readRDS('./data/runoff_summer.rds')
 runoff_month <- readRDS('./data/runoff_month.rds')
 runoff_year <- readRDS('./data/runoff_year.rds')
 
-names <- c('sname', 'winter', 'summer', 'month', 'year')
+runoff_summer_TM1 <- runoff_summer[,min(value),by = sname]
+runoff_summer_TM2 <- runoff_summer[,max(value),by = sname]
+runoff_summer_to_merge <- merge(runoff_summer_TM1, runoff_summer_TM2, by = 'sname')
+colnames(runoff_summer_to_merge) <- c('sname','min', 'max')
+runoff_summer_to_merge
+runoff_summer
+runoff_summer_minmax <- merge(runoff_summer, runoff_summer_to_merge, by = 'sname')
+runoff_summer_minmax
+runoff_summer_max_final <- runoff_summer_minmax[runoff_summer_minmax$value == runoff_summer_minmax$max] 
+runoff_summer_min_final <- runoff_summer_minmax[runoff_summer_minmax$value == runoff_summer_minmax$min] 
 
-runoff_max <- data.table(winter = runoff_winter[,max(value),by = sname], summer = runoff_summer[,max(value),by = sname], month = runoff_month[,max(value),by = sname], year = runoff_year[,max(value),by = sname])
-runoff_max[,c(3,5,7)] <- NULL
-colnames(runoff_max) <- names
+ggplot(data = runoff_summer_max_final, aes(x = sname, y = max, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
 
-runoff_min <- data.table(value = runoff_winter[,min(value),by = sname], value = runoff_summer[,min(value),by = sname], value = runoff_month[,min(value),by = sname], value = runoff_year[,min(value),by = sname])
-runoff_min[,c(3,5,7)] <- NULL
-colnames(runoff_min) <- names
+ggplot(data = runoff_summer_min_final, aes(x = sname, y = min, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+runoff_w_TM1 <- runoff_winter[,min(value),by = sname]
+runoff_w_TM2 <- runoff_winter[,max(value),by = sname]
+runoff_w_to_merge <- merge(runoff_w_TM1, runoff_w_TM2, by = 'sname')
+colnames(runoff_w_to_merge) <- c('sname','min', 'max')
+
+runoff_w_minmax <- merge(runoff_winter, runoff_w_to_merge, by = 'sname')
+
+runoff_w_max_final <- runoff_w_minmax[runoff_w_minmax$value == runoff_w_minmax$max] 
+runoff_w_min_final <- runoff_w_minmax[runoff_w_minmax$value == runoff_w_minmax$min] 
+
+ggplot(data = runoff_w_max_final, aes(x = sname, y = max, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+ggplot(data = runoff_w_min_final, aes(x = sname, y = min, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+runoff_m_TM1 <- runoff_month[,min(value),by = sname]
+runoff_m_TM2 <- runoff_month[,max(value),by = sname]
+runoff_m_to_merge <- merge(runoff_m_TM1, runoff_m_TM2, by = 'sname')
+colnames(runoff_m_to_merge) <- c('sname','min', 'max')
+
+runoff_m_minmax <- merge(runoff_month, runoff_m_to_merge, by = 'sname')
+
+runoff_m_max_final <- runoff_m_minmax[runoff_m_minmax$value == runoff_m_minmax$max] 
+runoff_m_min_final <- runoff_m_minmax[runoff_m_minmax$value == runoff_m_minmax$min] 
+
+ggplot(data = runoff_m_max_final, aes(x = sname, y = max, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+ggplot(data = runoff_m_min_final, aes(x = sname, y = min, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+runoff_y_TM1 <- runoff_year[,min(value),by = sname]
+runoff_y_TM2 <- runoff_year[,max(value),by = sname]
+runoff_y_to_merge <- merge(runoff_y_TM1, runoff_y_TM2, by = 'sname')
+colnames(runoff_y_to_merge) <- c('sname','min', 'max')
+
+runoff_y_minmax <- merge(runoff_year, runoff_y_to_merge, by = 'sname')
+
+runoff_y_max_final <- runoff_y_minmax[runoff_y_minmax$value == runoff_y_minmax$max] 
+runoff_y_min_final <- runoff_y_minmax[runoff_y_minmax$value == runoff_y_minmax$min] 
+ggplot(data = runoff_y_max_final, aes(x = sname, y = max, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
+ggplot(data = runoff_y_min_final, aes(x = sname, y = min, label = year)) +
+  geom_point() +
+  geom_text(aes(label=year),hjust=0, vjust=0) 
+
 
