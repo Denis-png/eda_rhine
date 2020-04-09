@@ -2,7 +2,7 @@ source('./code/sourcecode.r')
 
 #Question 1
 year_thres <- 2000
-
+runoff_year_key
 runoff_year_key[year < year_thres, period := factor('pre_2000')]
 runoff_year_key[year >= year_thres, period := factor('aft_2000')]
 runoff_month_key[year < year_thres, period := factor('pre_2000')]
@@ -21,5 +21,8 @@ ggplot(to_plot, aes(season, value, fill = period)) +
 #Annual runoff for BASR and KOEL stations increased after 2000, but decreased for DOMA
 
 #Question 2
+quantiles <- runoff_day[,.(quantile(value, c(0.1)),quantile(value, c(0.9))), by = sname] # counting higl and low quantiles
 
-
+runoff_day_new <- merge(runoff_day, quantiles, by = 'sname')
+runoff_days_rating <- data.table(above_high = runoff_day_new[value >= V2,.N], below_low = runoff_day_new[value < V1, .N])
+runoff_days_rating
