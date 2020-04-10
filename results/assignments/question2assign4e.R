@@ -15,6 +15,8 @@ ggplot(precip_stats, aes(x = year, y = mean_year)) +
   scale_color_manual(values = colset_4[c(2, 3, 4)]) +
   xlab(label = "Year") +
   ylab(label = "Precipitacion") 
+#A lot of points fitting the line. But moving from past on the timescale, we notice that point spreading stronger.
+#That means that precipitation leve is changing by the timescale and affects river runoff.
 
 #Formatting date to seasons
 precip_day$month <- precip_day[,month(date)]
@@ -28,3 +30,4 @@ ggplot(precip_day, aes(season, value, fill = season)) +
   geom_boxplot() +
   xlab(label = "Season") +
   ylab(label = "Precipitation")
+#Highest precipitation level is at summer and autmn. Spring has the lowest
