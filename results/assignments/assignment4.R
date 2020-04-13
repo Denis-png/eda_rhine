@@ -34,7 +34,6 @@ ggplot(runoff_day_new, aes(x = season, y = date, fill = season)) +
   geom_boxplot() +
   facet_wrap(~quantile)
 
-  facet_wrap(~quantile)
 
 #Question 3
 dt <- runoff_summary[, .(sname, area, category)]

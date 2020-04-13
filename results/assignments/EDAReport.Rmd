@@ -1,0 +1,135 @@
+---
+title: "Exploratary data analysis in the Rhine river"
+author: "Denis Golovenko"
+date: "13/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '../..')
+```
+
+
+## 0. Introduction
+We named our Rhine river exploration as a trip to a new land. The destination of our trip was a proof of the following hypothesis, made by Middelkoop:
+
+>“Higher winter discharge as a result of intensified snow-melt and increased winter precipitation, and lower summer discharge due to the reduced winter snow storage and an increase of evapotranspiration.”
+
+On the whole way to prove this assumption, we were using river’s runoffs, catchment areas, altitudes and variables for some particular cases.  As a main tool we used the R language.
+Data was recorded from stations on the Rhine river. We had it from 17 station, which names were shortened for convenience. The period of records is since 1814 till 2016, but depending on our reasonings, periods were taken differently. 
+  
+## 1. Preparation stage
+Firstly, to work with a data we had to get rid of a raw data format and make it tidy format. In all operations with a data were used libraries: data.table for formatting data as a tables and work with it and ggplot2 for plotting data.
+As we have prepared our tidy format data tables, the exploration began.
+Here are examples of the data sets we used:
+  
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+knitr::kable(runoff_day[(1:10),.(sname,date,value)], caption = 'Runoff day table')
+```
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+knitr::kable(runoff_stats, caption = 'Runoff stats table')
+```
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+knitr::kable(runoff_summary[,.(sname, area, altitude, start, end, runoff_class, category)], caption = 'Runoff summary table')
+```
+  
+## 2. Plotting the data
+Ggplot library gives us an opportunity to plot anything we want and anyway we can imagine. Most commonly plot’s types we used are scatterplot, boxplot and histogram.
+On this stage the exploration is actually started. But we were not proving the Middelkoop’s assumption yet. It was more to get how data behaves, also behavior of each station. Plotting different data sets in a different variation got us to the following results.
+
+### *Mean, max, min, median runoff by stations:*
+  
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+#Mean, max, min, median runoff by stations
+runoff_stats <- readRDS('./data/runoff_stats.rds')
+runoff_day <- readRDS('./data/runoff_day.rds')
+
+runoff_median <- runoff_day[,.(round(median(value),0)), by = sname]
+runoff_stats$median <- runoff_median$V1
+
+colset_4 <-  c("MEAN", "MEDIAN", "MIN", "MAX")
+shapeset_4 <- c(3, 8, 11, 14)
+ggplot(runoff_stats) + 
+  geom_point(aes(x= sname, y= mean_day, col=colset_4[1]), shape = shapeset_4[1]) +
+  geom_point(aes(x= sname, y= median, col=colset_4[2]), shape = shapeset_4[2]) +
+  geom_point(aes(x= sname, y= min_day, col=colset_4[3]), shape = shapeset_4[3]) +
+  geom_point(aes(x= sname, y= max_day, col=colset_4[4]), shape = shapeset_4[4]) +
+  labs(y="Runoff", x = "Station name", color = 'Runoff value type')
+
+```
+  
+### *Annual and monthly boxplot compraison of DOMA, BASR and KOEL stations:*
+  
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+#Annual&Monthly boxplot compraison of DOMA, BASR and KOEL stations
+year_thres <- 2000
+runoff_year_key[year < year_thres, period := factor('pre_2000')]
+runoff_year_key[year >= year_thres, period := factor('aft_2000')]
+runoff_month_key[year < year_thres, period := factor('pre_2000')]
+runoff_month_key[year >= year_thres, period := factor('aft_2000')]
+
+to_plot <- rbind(cbind(runoff_year_key, season = factor('year')), 
+                 cbind(runoff_month_key, season = factor('month')),fill=TRUE) 
+
+ggplot(to_plot, aes(season, value, fill = period)) +
+  geom_boxplot() +
+  facet_wrap(~sname, scales = 'free_y') +
+  scale_fill_manual(values = colset_4[c(4, 1)]) +
+  xlab(label = "Season") +
+  ylab(label = "Runoff (m3/s)") +
+  theme_bw()
+```
+  
+### *Regression method:*  
+  
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+#Regression method
+dt <- runoff_summary[, .(sname, area, category)]
+to_plot <- runoff_stats[dt, on = 'sname']
+ggplot(to_plot, aes(x = mean_day, y = area)) +
+  geom_point(aes(col = category), cex = 3) +
+  geom_smooth(method = 'loess', formula = y ~ x, se = 0, col = colset_4[1]) +
+  scale_color_manual(values = colset_4[c(2, 3, 4)]) +
+  xlab(label = "Area (km3)") +
+  ylab(label = "Runoff (m3/s)") +
+  theme_bw()
+```
+    
+## 3. Actual exploration 
+A way to explore something is to notice that it is relative to something else. And that is a way we did. We have been comparing our runoff at each station relatively to a catchment area of a station and an altitude.  For example, stations based in mountains turned out to have smaller runoff than the others. But the opposite, stations which are the closest to the sea, had bigger runoff value. 
+Important to remember about the time scale. Whole our data is sensitive to the time. We were comparing daily, monthly and annual runoff on each station, because sometimes the changes can be noticeable only in a large time scale, or it might turn out that there is no change at all and increase/decrease of runoff is natural. 
+And finally season runoff. That was our destination point.  We divided our data sets with runoff values depending on season (winter or summer) . Here is a final summarizing plot that shows us the changes and confirm the Middelkoop’s assumption.
+  
+### *Our final plot on which we base the conclusion:*  
+  
+```{r echo=FALSE}
+source('./code/sourcecode.r')
+#Our final plot on which we base the conclusion
+year_thres <- 1980
+to_plot <- rbind(cbind(runoff_winter, season = factor('winter')), 
+                 cbind(runoff_summer, season = factor('summer'))) 
+
+to_plot[year < year_thres, period := factor('1950-1980')]
+to_plot[year >= year_thres, period := factor('1981-2016')]
+to_plot[year < year_thres, period := factor('1950-1980')]
+to_plot[year >= year_thres, period := factor('1981-2016')]
+
+to_plot <- to_plot[year >= 1950]
+
+ggplot(to_plot, aes(season, value, fill = period)) +
+  geom_boxplot() +
+  facet_wrap(~sname, scales = 'free_y') +
+  scale_fill_manual(values = colset_4[c(4, 1)]) +
+  xlab(label = "Season") +
+  ylab(label = "Runoff (m3/s)") +
+  theme_bw()
+```
+  
+## 4. Conclusion
+#### **Assumption has been proved. Increase in winter runoff and decrease in summer runoff.**
