@@ -24,8 +24,15 @@ ggplot(to_plot, aes(season, value, fill = period)) +
 quantiles <- runoff_day[,.(quantile(value, c(0.1)),quantile(value, c(0.9))), by = sname] # counting higl and low quantiles
 
 runoff_day_new <- merge(runoff_day, quantiles, by = 'sname')
-runoff_days_rating <- data.table(above_high = runoff_day_new[value >= V2,.N], below_low = runoff_day_new[value < V1, .N])
-runoff_days_rating
+runoff_day_new[value > V2, quantile:= factor('high')]
+runoff_day_new[value <= V2 & value >= V1, quantile:= factor('normal')]
+runoff_day_new[value < V1, quantile:= factor('low')]
+runoff_day_new$V1 <- NULL
+runoff_day_new$V2 <- NULL
+runoff_day_new
+ggplot(runoff_day_new, aes(x = season, y = date, fill = season)) +
+  geom_boxplot() +
+  facet_wrap(~quantile)
 
 #Question 3
 dt <- runoff_summary[, .(sname, area, category)]
