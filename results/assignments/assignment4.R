@@ -21,6 +21,15 @@ ggplot(to_plot, aes(season, value, fill = period)) +
 #Annual runoff for BASR and KOEL stations increased after 2000, but decreased for DOMA
 
 #Question 2
+numberOfDays <- function(date) {
+  m <- format(date, format="%m")
+  
+  while (format(date, format="%m") == m) {
+    date <- date + 1
+  }
+  
+  return(as.integer(format(date - 1, format="%d")))
+}
 quantiles <- runoff_day[,.(quantile(value, c(0.1)),quantile(value, c(0.9))), by = sname] # counting higl and low quantiles
 
 runoff_day_new <- merge(runoff_day, quantiles, by = 'sname')
@@ -31,6 +40,7 @@ runoff_day_new$V1 <- NULL
 runoff_day_new$V2 <- NULL
 runoff_day_new
 ggplot(runoff_day_new, aes(x = season, y = date, fill = season)) +
+ggplot(runoff_day_new, aes(x = season, y = numberOfDays(date))) +
   geom_boxplot() +
   facet_wrap(~quantile)
 
